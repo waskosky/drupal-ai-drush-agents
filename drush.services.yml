@@ -1,0 +1,16 @@
+services:
+  ai_drush_agents.cai_config_explain_commands:
+    class: Drupal\ai_drush_agents\Commands\AiConfigExplainCommands
+    arguments: ['@plugin.manager.ai_agents', '@ai.provider']
+    tags:
+      - { name: drush.command }
+  ai_drush_agents.ai_agent_commands:
+    class: Drupal\ai_drush_agents\Commands\AiAgentCommands
+    arguments: ['@plugin.manager.ai_agents', '@entity_type.manager', '@current_user']
+    tags:
+      - { name: drush.command }
+  ai_drush_agents.ai_drush_explainer:
+    class: Drupal\ai_drush_agents\Commands\AiDrushExplainerCommands
+    arguments: ['@plugin.manager.ai_agents', '@ai.provider']
+    tags:
+      - { name: drush.command }

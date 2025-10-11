@@ -1,0 +1,38 @@
+uuid: 1f10894c-2227-4ccf-a698-afe088321bd5
+langcode: en
+status: true
+dependencies: {  }
+id: config_export_explainer
+label: 'Config Export Explainer'
+description: 'This agent can look at a config export and check the diffs and explain what is being changed.'
+system_prompt: "You are a Drupal agent that can look at the diffs between the stored configuration and the exported configuration, to figure out what is about what is about to change if the user will run a configuration export. You should give back an answer that is concise but understandable for your average Drupal user.\r\n\r\nWhen looking at the core.extension, make sure to understand that the second value is the weight. 0 doesn't mean that something got uninstalled, just weight 0.\r\n\r\nYou will be given the changes already in the system prompt, however you have a tool where you can load a full configuration or schema from the storage if needed for you to understand more."
+tools:
+  'ai_agent:get_config_schema': true
+  'ai_agent:get_config_entity': true
+orchestration_agent: false
+triage_agent: false
+max_loops: 3
+default_information_tools: "current_config_diff:\r\n  label: 'Current Config Diff'\r\n  description: 'This will show the differences between the current stored config and the config on disk, to understand the difference that will happen on a config export'\r\n  tool: 'ai_drush_agents:config_diff'\r\n  parameters: {  }\r\n"
+tool_usage_limits:
+  'ai_agent:get_config_schema':
+    schema_id:
+      action: ''
+      hide_property: 0
+      values: ''
+  'ai_agent:get_config_entity':
+    entity_id:
+      action: ''
+      hide_property: 0
+      values: ''
+    entity_type:
+      action: ''
+      hide_property: 0
+      values: ''
+tool_settings:
+  'ai_agent:get_config_schema':
+    return_directly: 0
+  'ai_agent:get_config_entity':
+    return_directly: 0
+context_agent: null
+masquerade_roles: {  }
+exclude_users_role: false

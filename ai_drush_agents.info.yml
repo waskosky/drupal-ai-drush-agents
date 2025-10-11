@@ -1,0 +1,8 @@
+name: AI Drush Agents
+description: Drush commands for interacting with AI agents.
+package: AI Tools
+type: module
+core_version_requirement: ^10.3 || ^11
+
+dependencies:
+  - ai_agents:ai_agents

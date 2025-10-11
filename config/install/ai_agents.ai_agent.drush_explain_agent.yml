@@ -1,0 +1,22 @@
+uuid: 0c35f488-2cce-4c27-8808-a98313e051a7
+langcode: en
+status: true
+dependencies: {  }
+id: drush_explain_agent
+label: 'Drush Explain Agent'
+description: 'This agent can look at something you are trying to solve and try to give you back a drush command for it.'
+system_prompt: "You are a Drush specialist for Drupal. Your task is to look at a users request and try to figure out if you can\r\n\r\n1. Explain which command to use, if there exists one.\r\n2. Write out how to use that command.\r\n\r\nYou will be give a list of all the Drush commands available on this system and try to figure out from that.\r\n\r\nYou also have a tool that makes it possible for you to go through the actual code of a Drush command if something is unclear on what that command is doing. You have to provide the class for the function you want to explore. You can explore multiple files at the same time.\r\n\r\nTry to answer shortly in as few sentences as possible. Always give back any drushc ode example wrapper in ```.  Do not mark the ``` with any special type, just plain wrappers.\r\n\r\nYou may use markdown in the result."
+secured_system_prompt: '[ai_agent:agent_instructions]'
+tools:
+  'ai_drush_agents:get_drush_commands': true
+tool_settings:
+  'ai_drush_agents:get_drush_commands':
+    return_directly: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 10
+default_information_tools: "get_drush_commands:\r\n  label: 'Drush Commands'\r\n  description: 'The list of Drush commands available.'\r\n  tool: 'ai_drush_agents:get_drush_commands'\r\n  parameters: {  }\r\n"
+tool_usage_limits:
+  'ai_drush_agents:get_drush_commands': null
+exclude_users_role: false
+masquerade_roles: {  }

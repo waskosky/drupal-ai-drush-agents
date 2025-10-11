@@ -1,0 +1,10 @@
+
+{
+  "name": "drupal/ai_drush_agents",
+  "description": "Drush commands for interacting with AI agents.",
+  "type": "drupal-module",
+  "require": {
+    "drupal/ai_agents": "^1.1.0",
+    "sevenecks/markdown-terminal": "^0.0.1"
+  }
+}
