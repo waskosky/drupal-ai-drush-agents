@@ -101,6 +101,15 @@ Use `drush agents:run ... --output=json` and read the `tool_results` array (see 
 
 ### 5.2 Call a tool directly
 
+List the registered tools when you need to discover IDs or groups:
+
+- `drush agents:tools` - compact table of every tool with group, label, and function name.
+- `drush agents:tools --group=information_tools --format=json` - filter and emit machine-friendly metadata.
+
+Inspect a specific tool before calling it:
+
+- `drush agents:tool-info ai_agent:get_config_by_id --format=json` - view context schema, constraints, and module dependencies.
+
 Run a specific tool (by plugin ID or function name) with `agents:tool`:
 
 ```bash

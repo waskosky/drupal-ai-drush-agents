@@ -13,6 +13,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Plugin\DataType\EntityAdapter;
+use Drupal\Core\Plugin\Context\ContextDefinitionInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drush\Attributes\Argument;
 use Drush\Attributes\Command;
@@ -246,6 +247,70 @@ final class AiAgentCommands extends DrushCommands {
     ksort($rows);
 
     return new RowsOfFields($rows);
+  }
+
+  /**
+   * List available tools with their metadata.
+   */
+  #[Command(name: 'agents:tools', aliases: ['agent:tools'])]
+  #[Usage(name: 'drush agents:tools', description: 'List all registered AI tools.')]
+  #[Usage(name: 'drush agents:tools --group=information_tools', description: 'Filter tools by group.')]
+  #[Usage(name: 'drush agents:tools --format=json', description: 'Return tool metadata in JSON form.')]
+  #[FieldLabels(labels: [
+    'id' => 'ID',
+    'function_name' => 'Function',
+    'name' => 'Label',
+    'group' => 'Group',
+    'description' => 'Description',
+  ])]
+  #[Option(name: 'group', description: 'Filter tools by group name.')]
+  public function listTools(array $options = ['format' => 'table', 'group' => NULL]): RowsOfFields {
+    $definitions = $this->functionCallPluginManager->getDefinitions();
+    ksort($definitions);
+
+    $targetGroup = (string) ($options['group'] ?? '');
+    if ($targetGroup === '') {
+      $targetGroup = NULL;
+    }
+
+    $rows = [];
+    foreach ($definitions as $id => $definition) {
+      $group = (string) ($definition['group'] ?? '');
+      if ($targetGroup !== NULL && $group !== $targetGroup) {
+        continue;
+      }
+      $rows[$id] = [
+        'id' => $id,
+        'function_name' => (string) ($definition['function_name'] ?? ''),
+        'name' => (string) ($definition['name'] ?? ''),
+        'group' => $group,
+        'description' => (string) ($definition['description'] ?? ''),
+      ];
+    }
+
+    return new RowsOfFields($rows);
+  }
+
+  /**
+   * Show detailed information for a specific tool.
+   */
+  #[Command(name: 'agents:tool-info', aliases: ['agent:tool-info'])]
+  #[Argument(name: 'tool_id', description: 'The tool plugin ID or function name to inspect.')]
+  #[Usage(name: 'drush agents:tool-info ai_agent:get_config_by_id', description: 'Inspect context requirements for the tool.')]
+  #[Usage(name: 'drush agents:tool-info ai_agent_get_config_by_id --format=json', description: 'Return tool info in JSON, resolving function names automatically.')]
+  public function describeTool(string $tool_id, array $options = ['format' => 'yaml']): array {
+    $tool = $this->instantiateTool($tool_id);
+    $definition = $tool->getPluginDefinition();
+
+    return [
+      'id' => $tool->getPluginId(),
+      'function_name' => $tool->getFunctionName(),
+      'name' => (string) ($definition['name'] ?? ''),
+      'description' => (string) ($definition['description'] ?? ''),
+      'group' => (string) ($definition['group'] ?? ''),
+      'module_dependencies' => $definition['module_dependencies'] ?? [],
+      'context_definitions' => $this->serializeContextDefinitions($tool->getContextDefinitions()),
+    ];
   }
 
   /**
@@ -780,6 +845,34 @@ final class AiAgentCommands extends DrushCommands {
       $resolved[$name] = $this->serializeContextValue($value);
     }
     return $resolved;
+  }
+
+  /**
+   * Normalize context definitions for presentation.
+   */
+  private function serializeContextDefinitions(array $definitions): array {
+    $output = [];
+    foreach ($definitions as $name => $definition) {
+      if (!$definition instanceof ContextDefinitionInterface) {
+        continue;
+      }
+      $entry = [
+        'label' => (string) ($definition->getLabel() ?? ''),
+        'required' => $definition->isRequired(),
+        'data_type' => $definition->getDataType(),
+        'description' => (string) ($definition->getDescription() ?? ''),
+      ];
+      $defaultValue = $definition->getDefaultValue();
+      if ($defaultValue !== NULL) {
+        $entry['default_value'] = $this->serializeContextValue($defaultValue);
+      }
+      $constraints = $definition->getConstraints() ?? [];
+      if (!empty($constraints)) {
+        $entry['constraints'] = array_keys($constraints);
+      }
+      $output[$name] = $entry;
+    }
+    return $output;
   }
 
 }
