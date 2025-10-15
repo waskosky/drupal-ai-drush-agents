@@ -6,7 +6,7 @@ services:
       - { name: drush.command }
   ai_drush_agents.ai_agent_commands:
     class: Drupal\ai_drush_agents\Commands\AiAgentCommands
-    arguments: ['@plugin.manager.ai_agents', '@entity_type.manager', '@current_user']
+    arguments: ['@plugin.manager.ai_agents', '@entity_type.manager', '@current_user', '@plugin.manager.ai.function_calls']
     tags:
       - { name: drush.command }
   ai_drush_agents.ai_drush_explainer:
