@@ -52,6 +52,16 @@ final class AiAgentCommands extends DrushCommands {
   private ?string $activeAgentId = NULL;
 
   /**
+   * Optional tool catalog manager integration.
+   */
+  private ?object $toolCatalogManager = NULL;
+
+  /**
+   * Tracks whether we attempted to load the catalog manager.
+   */
+  private bool $toolCatalogManagerChecked = FALSE;
+
+  /**
    * Constructs an AiAgentCommands object.
    */
   public function __construct(
@@ -302,7 +312,7 @@ final class AiAgentCommands extends DrushCommands {
     $tool = $this->instantiateTool($tool_id);
     $definition = $tool->getPluginDefinition();
 
-    return [
+    $result = [
       'id' => $tool->getPluginId(),
       'function_name' => $tool->getFunctionName(),
       'name' => (string) ($definition['name'] ?? ''),
@@ -311,6 +321,24 @@ final class AiAgentCommands extends DrushCommands {
       'module_dependencies' => $definition['module_dependencies'] ?? [],
       'context_definitions' => $this->serializeContextDefinitions($tool->getContextDefinitions()),
     ];
+
+    $catalogEntry = $this->getCatalogEntry($tool->getPluginId());
+    if ($catalogEntry !== NULL) {
+      if (!empty($catalogEntry['summary'])) {
+        $result['catalog_summary'] = (string) $catalogEntry['summary'];
+      }
+      if (!empty($catalogEntry['source'])) {
+        $result['catalog_summary_source'] = (string) $catalogEntry['source'];
+      }
+      if (!empty($catalogEntry['updated'])) {
+        $updated = (int) $catalogEntry['updated'];
+        if ($updated > 0) {
+          $result['catalog_summary_updated'] = date('c', $updated);
+        }
+      }
+    }
+
+    return $result;
   }
 
   /**
@@ -873,6 +901,64 @@ final class AiAgentCommands extends DrushCommands {
       $output[$name] = $entry;
     }
     return $output;
+  }
+
+  /**
+   * Retrieve the catalog entry for the given tool when possible.
+   */
+  private function getCatalogEntry(string $pluginId): ?array {
+    $manager = $this->getToolCatalogManager();
+    if ($manager === NULL) {
+      return NULL;
+    }
+
+    if (!method_exists($manager, 'getEntry')) {
+      return NULL;
+    }
+
+    try {
+      if (method_exists($manager, 'getSummary')) {
+        $manager->getSummary($pluginId);
+      }
+      $entry = $manager->getEntry($pluginId);
+    }
+    catch (\Throwable $exception) {
+      $this->logger()->debug('Failed to fetch tool catalog entry for @tool: @message', [
+        '@tool' => $pluginId,
+        '@message' => $exception->getMessage(),
+      ]);
+      return NULL;
+    }
+
+    return is_array($entry) ? $entry : NULL;
+  }
+
+  /**
+   * Resolve the optional tool catalog manager service once per request.
+   */
+  private function getToolCatalogManager(): ?object {
+    if ($this->toolCatalogManagerChecked) {
+      return $this->toolCatalogManager;
+    }
+
+    $this->toolCatalogManagerChecked = TRUE;
+
+    try {
+      if (\Drupal::hasService('ai_agent_configurator.tool_catalog_manager')) {
+        $service = \Drupal::service('ai_agent_configurator.tool_catalog_manager');
+        if (is_object($service)) {
+          $this->toolCatalogManager = $service;
+        }
+      }
+    }
+    catch (\Throwable $exception) {
+      $this->logger()->debug('Tool catalog manager unavailable: @message', [
+        '@message' => $exception->getMessage(),
+      ]);
+      $this->toolCatalogManager = NULL;
+    }
+
+    return $this->toolCatalogManager;
   }
 
 }
