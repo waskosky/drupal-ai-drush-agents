@@ -3,7 +3,7 @@
 namespace Drupal\ai_drush_agents\Plugin\AiFunctionCall;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\KeyValueStore\KeyValueFactoryExpirable;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactory;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -65,9 +65,9 @@ class SaveSchemaFileToModule extends FunctionCallBase implements ExecutableFunct
   /**
    * The key value factory.
    *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryExpirable
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactory
    */
-  protected KeyValueFactoryExpirable $keyValueFactory;
+  protected KeyValueExpirableFactory $keyValueFactory;
 
   /**
    * The key value store.

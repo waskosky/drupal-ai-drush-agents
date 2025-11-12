@@ -2,7 +2,7 @@
 
 namespace Drupal\ai_drush_agents\Plugin\AiFunctionCall;
 
-use Drupal\Core\KeyValueStore\KeyValueFactoryExpirable;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactory;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -44,9 +44,9 @@ class LoadTemporaryData extends FunctionCallBase implements ExecutableFunctionCa
   /**
    * The key value expirable factory.
    *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryExpirable
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactory
    */
-  protected KeyValueFactoryExpirable $keyValueFactory;
+  protected KeyValueExpirableFactory $keyValueFactory;
 
   /**
    * The key value store.
