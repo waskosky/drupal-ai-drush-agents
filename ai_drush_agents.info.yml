@@ -1,6 +1,6 @@
 name: AI Drush Agents
 description: Drush commands for interacting with AI agents.
-package: AI Tools
+package: RainTech
 type: module
 core_version_requirement: ^10.3 || ^11
 
